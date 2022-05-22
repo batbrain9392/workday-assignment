@@ -56,7 +56,7 @@ const App = () => {
       <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }}>
         {filteredManagers.length ? (
           filteredManagers.map((manager, i) => (
-            <li role="option" aria-selected={i === 0}>
+            <li key={manager.id} role="option" aria-selected={i === 0}>
               <div className="initials">{manager.initials}</div>
               <div>
                 <div className="name">{manager.name}</div>
