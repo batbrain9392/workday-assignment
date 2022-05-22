@@ -15,10 +15,17 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(RESET_SELECTED_OPTION_INDEX);
   const listEl = useRef<HTMLUListElement | null>(null);
 
+  /**
+   * Set the displayed (filtered) item list with the full data on mount.
+   */
   useEffect(() => {
     setFilteredManagers(managers);
   }, [managers]);
 
+  /**
+   * Filter the main list and set the displayed list.
+   * Function has been debounced to increase performance.
+   */
   const filterResults = useMemo(
     () =>
       debounce((value: string) => {
@@ -34,10 +41,16 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
     [managers]
   );
 
+  /**
+   * Filters the list for every search term change.
+   */
   useEffect(() => {
     filterResults(searchTerm);
   }, [filterResults, searchTerm]);
 
+  /**
+   * Sets the search term on input and shows the list.
+   */
   const textboxInputHandler = useCallback((target: EventTarget) => {
     if (!(target instanceof HTMLInputElement)) return;
     const { value } = target;
@@ -45,10 +58,18 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
     setShowList(true);
   }, []);
 
+  /**
+   * Sets the first option as selected when the list opens with valid list items.
+   * Resets the selected option index when the list closes or if the list is empty.
+   */
   useEffect(() => {
     setSelectedOptionIndex(showList && filteredManagers.length ? 0 : RESET_SELECTED_OPTION_INDEX);
   }, [showList, filteredManagers]);
 
+  /**
+   * Scrolls the selected option into view.
+   * Skips when the list is empty.
+   */
   useEffect(() => {
     if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
       if (!listEl?.current) return;
@@ -64,6 +85,11 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
     }
   }, [selectedOptionIndex]);
 
+  /**
+   * Sets the selected option index on arrow key navigation.
+   * Sets the selected name in the textbox and filters the list accordingly on enter key.
+   * Skips when the list is empty.
+   */
   const textboxKeyDownHandler = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (!showList) return;
@@ -97,6 +123,7 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
   );
 
   return (
+    // container
     <div className="container" aria-owns="managerList">
       <input
         type="text"
@@ -113,7 +140,9 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
         onBlur={() => setShowList(false)}
         onKeyDown={(e) => textboxKeyDownHandler(e)}
       />
+      {/* icon */}
       <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
+      {/* list container */}
       <ul
         id="managerList"
         aria-label="Manager List"
@@ -122,10 +151,12 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
         ref={listEl}
       >
         {filteredManagers.length ? (
+          // valid list items
           filteredManagers.map((manager, i) => (
             <Option key={manager.id} manager={manager} selected={i === selectedOptionIndex} />
           ))
         ) : (
+          // list empty option
           <Option />
         )}
       </ul>

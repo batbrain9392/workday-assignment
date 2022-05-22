@@ -7,6 +7,9 @@ import { SearchBox } from './components';
 const App = () => {
   const [managers, setManagers] = useState<ManagerDisplayData[]>([]);
 
+  /**
+   * Fetch data on mount.
+   */
   useEffect(() => {
     (async () => {
       const data = await getManagerData();
