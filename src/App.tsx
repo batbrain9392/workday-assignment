@@ -1,23 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import './App.scss';
-import { getManagerData } from './services';
+import { fetchManagerDataController } from './services';
 import { ManagerDisplayData } from './types';
 import { SearchBox } from './components';
 
 const App = () => {
+  const [loading, setLoading] = useState(true);
   const [managers, setManagers] = useState<ManagerDisplayData[]>([]);
+  const [error, setError] = useState('');
 
   /**
    * Fetch data on mount.
+   * Abort on unmount.
    */
   useEffect(() => {
-    (async () => {
-      const data = await getManagerData();
-      setManagers(data);
-    })();
+    const { abort, fetchManagerData } = fetchManagerDataController();
+    fetchManagerData()
+      .then((data) => {
+        setError('');
+        setManagers(data);
+      })
+      .catch((err: Error) => {
+        setError(err.message);
+        setManagers([]);
+      })
+      .finally(() => setLoading(false));
+    return abort;
   }, []);
 
-  return <SearchBox managers={managers}></SearchBox>;
+  return (
+    <main>
+      <SearchBox {...{ managers, loading }}></SearchBox>
+      {error && <div className="error">{error}</div>}
+    </main>
+  );
 };
 
 export default App;

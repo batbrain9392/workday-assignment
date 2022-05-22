@@ -2,10 +2,14 @@ import React from 'react';
 import { ManagerDisplayData } from '../../../types';
 import './index.scss';
 
-export const Option = ({ manager, selected }: { manager?: ManagerDisplayData; selected?: boolean }) => {
+export const Option = ({
+  manager,
+  selected,
+  children,
+}: React.PropsWithChildren<{ manager?: ManagerDisplayData; selected?: boolean }>) => {
   // list empty option
   if (!manager) {
-    return <li className="color-muted">No matching items</li>;
+    return <li className="color-muted">{children}</li>;
   }
   // valid list option
   return (

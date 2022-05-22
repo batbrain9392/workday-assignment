@@ -2,10 +2,17 @@ import { APIResponse, isAccount, ManagerDisplayData } from '../../types';
 
 const API_URL = `https://gist.githubusercontent.com/daviferreira/41238222ac31fe36348544ee1d4a9a5e/raw/5dc996407f6c9a6630bfcec56eee22d4bc54b518/employees.json`;
 
-export async function getManagerData(): Promise<ManagerDisplayData[]> {
-  const res = await fetch(API_URL);
-  const apiResponse: APIResponse = await res.json();
-  return convertToManagerDisplayData(apiResponse);
+export function fetchManagerDataController() {
+  const controller = new AbortController();
+  const { signal } = controller;
+  return {
+    abort: () => controller.abort(),
+    fetchManagerData: async () => {
+      const res = await fetch(API_URL, { signal, method: 'GET' });
+      const apiResponse: APIResponse = await res.json();
+      return convertToManagerDisplayData(apiResponse);
+    },
+  };
 }
 
 function convertToManagerDisplayData({ data, included }: APIResponse): ManagerDisplayData[] {

@@ -7,7 +7,7 @@ import './index.scss';
 const RESET_SELECTED_OPTION_INDEX = -1;
 const DEBOUNCE_TIME = 300;
 
-export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
+export const SearchBox = ({ managers, loading }: { managers: ManagerDisplayData[]; loading: boolean }) => {
   const [filteredManagers, setFilteredManagers] = useState<typeof managers>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showList, setShowList] = useState(false);
@@ -127,21 +127,23 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
     <div className="container" aria-owns="managerList">
       <input
         type="text"
-        placeholder="Choose Manager"
+        placeholder={loading ? 'Loading...' : 'Choose Manager'}
         autoComplete="off"
         role="combobox"
+        aria-label={loading ? 'Loading manager list' : 'Choose Manager'}
         aria-controls="managerList"
         aria-expanded={showList}
         aria-autocomplete="list"
         ref={inputEl}
         value={searchTerm}
+        disabled={loading}
         onInput={(e) => textboxInputHandler(e.target)}
         onFocus={() => setShowList(true)}
         onBlur={() => setShowList(false)}
         onKeyDown={(e) => textboxKeyDownHandler(e)}
       />
       {/* icon */}
-      <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
+      {loading ? null : <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>}
       {/* list container */}
       <ul
         id="managerList"
@@ -150,14 +152,17 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
         style={{ display: showList ? 'block' : 'none' }}
         ref={listEl}
       >
-        {filteredManagers.length ? (
-          // valid list items
-          filteredManagers.map((manager, i) => (
-            <Option key={manager.id} manager={manager} selected={i === selectedOptionIndex} />
-          ))
+        {managers.length ? (
+          filteredManagers.length ? (
+            // valid list items
+            filteredManagers.map((manager, i) => (
+              <Option key={manager.id} manager={manager} selected={i === selectedOptionIndex} />
+            ))
+          ) : (
+            <Option>No matching items</Option>
+          )
         ) : (
-          // list empty option
-          <Option />
+          <Option>List is empty</Option>
         )}
       </ul>
     </div>

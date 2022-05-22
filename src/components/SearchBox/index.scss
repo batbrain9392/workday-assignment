@@ -42,4 +42,6 @@ ul {
   min-height: calc(var(--border-adjustment) + var(--list-item-height));
   max-height: calc(var(--border-adjustment) + var(--list-item-height) * 2);
   overflow-y: auto;
+  background-color: white;
+  z-index: 1;
 }
