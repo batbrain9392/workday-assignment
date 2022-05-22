@@ -8,6 +8,7 @@ const RESET_SELECTED_OPTION_INDEX = -1;
 const DEBOUNCE_TIME = 300;
 const NO_MATCHING_ITEMS = `No matching items`;
 const LIST_IS_EMPTY = `List is empty`;
+const removeSpaces = (value: string) => value.replace(/\s/g, '');
 
 export const SearchBox = <T extends DisplayData>({
   list,
@@ -39,15 +40,13 @@ export const SearchBox = <T extends DisplayData>({
   const filterResults = useMemo(
     () =>
       debounce((value: string) => {
-        const valueWithNoSpaces = value.replace(/\s/g, '');
+        const valueWithNoSpaces = removeSpaces(value);
         if (!valueWithNoSpaces) {
           setFilteredList(list);
           return;
         }
         const searchRegex = new RegExp(valueWithNoSpaces, `i`);
-        const data = list.filter(({ firstName, lastName }) =>
-          `${firstName}${lastName}`.toLowerCase().match(searchRegex)
-        );
+        const data = list.filter(({ name }) => removeSpaces(name).match(searchRegex));
         setFilteredList(data);
       }, DEBOUNCE_TIME),
     [list]
