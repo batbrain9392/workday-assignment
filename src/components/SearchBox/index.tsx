@@ -9,7 +9,7 @@ const DEBOUNCE_TIME = 300;
 const NO_MATCHING_ITEMS = `No matching items`;
 const LIST_IS_EMPTY = `List is empty`;
 
-export const SearchBox = ({ managers, loading }: { managers: ManagerDisplayData[]; loading: boolean }) => {
+export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
   const [filteredManagers, setFilteredManagers] = useState<typeof managers>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showList, setShowList] = useState(false);
@@ -129,23 +129,22 @@ export const SearchBox = ({ managers, loading }: { managers: ManagerDisplayData[
     <div className="container" aria-owns="managerList">
       <input
         type="text"
-        placeholder={loading ? 'Loading...' : 'Choose Manager'}
+        placeholder="Choose Manager"
         autoComplete="off"
         role="combobox"
-        aria-label={loading ? 'Loading manager list' : 'Choose Manager'}
+        aria-label="Choose Manager"
         aria-controls="managerList"
         aria-expanded={showList}
         aria-autocomplete="list"
         ref={inputEl}
         value={searchTerm}
-        disabled={loading}
         onInput={(e) => textboxInputHandler(e.target)}
         onFocus={() => setShowList(true)}
         onBlur={() => setShowList(false)}
         onKeyDown={(e) => textboxKeyDownHandler(e)}
       />
       {/* icon */}
-      {loading ? null : <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>}
+      <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
       {/* list container */}
       <ul
         id="managerList"

@@ -28,9 +28,11 @@ const App = () => {
     return abort;
   }, []);
 
-  return (
+  return loading ? (
+    <div>Loading...</div>
+  ) : (
     <main>
-      <SearchBox {...{ managers, loading }}></SearchBox>
+      <SearchBox {...{ managers }}></SearchBox>
       {error && <div className="error">{error}</div>}
     </main>
   );
