@@ -23,6 +23,7 @@ input {
   height: var(--input-height);
   padding: 0 calc(var(--input-pad) + var(--icon-size)) 0 var(--input-pad);
   text-overflow: ellipsis;
+  background-color: transparent;
 }
 
 .icon {
@@ -30,6 +31,7 @@ input {
   font-size: var(--icon-size);
   top: calc(var(--input-height) / 2 - var(--icon-size) / 2);
   right: calc(var(--input-pad) - 0.2rem);
+  z-index: -1;
 }
 
 ul {
