@@ -1,2 +1,2 @@
 export * from './api-response';
-export * from './manager-display-data';
+export * from './display-data';
