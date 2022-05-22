@@ -9,17 +9,15 @@ const DEBOUNCE_TIME = 300;
 const NO_MATCHING_ITEMS = `No matching items`;
 const LIST_IS_EMPTY = `List is empty`;
 
-export const SearchBox = <
-  T extends {
-    list: DisplayData[];
-    placeholder: string;
-    listAriaLabel: string;
-  }
->({
+export const SearchBox = <T extends DisplayData>({
   list,
   placeholder,
   listAriaLabel,
-}: T) => {
+}: {
+  list: T[];
+  placeholder: string;
+  listAriaLabel: string;
+}) => {
   const [filteredList, setFilteredList] = useState<typeof list>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showList, setShowList] = useState(false);
