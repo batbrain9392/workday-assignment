@@ -54,11 +54,9 @@ const App = () => {
       if (!listEl?.current) return;
       const { current } = listEl;
       const { scrollTop, clientHeight } = current;
-      console.log(scrollTop, clientHeight);
       const selectedOptionEl = current.children.item(selectedOptionIndex);
       if (!selectedOptionEl || !(selectedOptionEl instanceof HTMLLIElement)) return;
       const { offsetTop, offsetHeight } = selectedOptionEl;
-      console.log(offsetTop, offsetHeight);
       const offsetBottom = offsetTop + offsetHeight;
       const scrollBottom = scrollTop + clientHeight;
       if (offsetTop < scrollTop) {
