@@ -1,0 +1,52 @@
+<input
+  type="text"
+  [placeholder]="placeholder"
+  autoComplete="off"
+  role="combobox"
+  [attr.aria-label]="placeholder"
+  [attr.aria-controls]="itemListId"
+  [attr.aria-expanded]="showList$ | async"
+  aria-autocomplete="list"
+  [formControl]="searchTermControl"
+  (input)="expandList()"
+  (focus)="expandList()"
+  (blur)="collapseList()"
+  (keydown.arrowup)="textboxKeyDownHandler($event)"
+  (keydown.arrowdown)="textboxKeyDownHandler($event)"
+  (keydown.enter)="textboxKeyDownHandler($event)"
+/>
+
+<!-- icon -->
+<span class="icon material-symbols-outlined">
+  expand_{{ (showList$ | async) ? "less" : "more" }}
+</span>
+
+<!-- list container -->
+<ul
+  [id]="itemListId"
+  [attr.aria-label]="listAriaLabel"
+  role="listbox"
+  [style.display]="(showList$ | async) ? 'block' : 'none'"
+  #listEl
+>
+  <ng-container [ngSwitch]="true">
+    <li app-option *ngSwitchCase="!list.length">List is empty</li>
+    <li app-option *ngSwitchCase="!(filteredList$ | async)?.length">
+      No matching items
+    </li>
+    <ng-container *ngSwitchDefault>
+      <li
+        app-option
+        *ngFor="
+          let item of filteredList$ | async;
+          trackBy: trackById;
+          index as i
+        "
+        [data]="item"
+        [attr.aria-selected]="i === (selectedOptionIndex$ | async)"
+        [attr.aria-label]="item.name"
+        role="option"
+      ></li>
+    </ng-container>
+  </ng-container>
+</ul>
