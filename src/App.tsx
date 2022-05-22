@@ -1,38 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './App.scss';
-import { fetchManagerDataController } from './services';
-import { DisplayData } from './types';
+import { useFetchManagerData } from './services';
 import { SearchBox } from './components';
 
-const App = () => {
-  const [loading, setLoading] = useState(true);
-  const [managers, setManagers] = useState<DisplayData[]>([]);
-  const [error, setError] = useState('');
+const API_URL = `https://gist.githubusercontent.com/daviferreira/41238222ac31fe36348544ee1d4a9a5e/raw/5dc996407f6c9a6630bfcec56eee22d4bc54b518/employees.json`;
 
-  /**
-   * Fetch data on mount.
-   * Abort on unmount.
-   */
-  useEffect(() => {
-    const { abort, fetchManagerData } = fetchManagerDataController();
-    fetchManagerData()
-      .then((data) => {
-        setError('');
-        setManagers(data);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setManagers([]);
-      })
-      .finally(() => setLoading(false));
-    return abort;
-  }, []);
+const App = () => {
+  const { data, loading, error } = useFetchManagerData(API_URL);
 
   return loading ? (
     <div>Loading...</div>
   ) : (
     <main>
-      <SearchBox list={managers} placeholder="Choose Manager" listAriaLabel="Manager List"></SearchBox>
+      <SearchBox list={data} placeholder="Choose Manager" listAriaLabel="Manager List"></SearchBox>
       {error && <div className="error">{error}</div>}
     </main>
   );
