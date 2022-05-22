@@ -7,7 +7,7 @@ export const Option = ({ manager, selected }: { manager?: ManagerDisplayData; se
     return <li className="color-muted">No matching items</li>;
   }
   return (
-    <li key={manager.id} role="option" aria-selected={selected}>
+    <li key={manager.id} role="option" aria-label={manager.name} aria-selected={selected}>
       <div className="initials">{manager.initials}</div>
       <div>
         <div className="name">{manager.name}</div>
