@@ -14,6 +14,7 @@ const App = () => {
   const [showList, setShowList] = useState(false);
   const inputEl = useRef<HTMLInputElement | null>(null);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(RESET_SELECTED_OPTION_INDEX);
+  const listEl = useRef<HTMLUListElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -48,21 +49,42 @@ const App = () => {
     [showList, filteredManagers]
   );
 
+  useEffect(() => {
+    if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
+      if (!listEl?.current) return;
+      const { current } = listEl;
+      const { scrollTop, clientHeight } = current;
+      console.log(scrollTop, clientHeight);
+      const selectedOptionEl = current.children.item(selectedOptionIndex);
+      if (!selectedOptionEl || !(selectedOptionEl instanceof HTMLLIElement)) return;
+      const { offsetTop, offsetHeight } = selectedOptionEl;
+      console.log(offsetTop, offsetHeight);
+      const offsetBottom = offsetTop + offsetHeight;
+      const scrollBottom = scrollTop + clientHeight;
+      if (offsetTop < scrollTop) {
+        current.scrollTop = offsetTop;
+      } else if (offsetBottom > scrollBottom) {
+        current.scrollTop = offsetBottom - clientHeight;
+      }
+    }
+  }, [selectedOptionIndex]);
+
   const inputKeyDownHandler = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!showList) return;
+      if (!showList || selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedOptionIndex(selectedOptionIndex + 1);
+          const nextIndex = (selectedOptionIndex + 1) % filteredManagers.length;
+          setSelectedOptionIndex(nextIndex);
           return;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedOptionIndex(selectedOptionIndex - 1);
+          const previousIndex = (selectedOptionIndex || filteredManagers.length) - 1;
+          setSelectedOptionIndex(previousIndex);
           return;
         case 'Enter':
           e.preventDefault();
-          if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
           setSearchTerm(filteredManagers[selectedOptionIndex].name);
           setShowList(false);
           return;
@@ -91,7 +113,7 @@ const App = () => {
         onKeyDown={(e) => inputKeyDownHandler(e)}
       />
       <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
-      <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }}>
+      <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }} ref={listEl}>
         {filteredManagers.length ? (
           filteredManagers.map((manager, i) => (
             <li key={manager.id} role="option" aria-selected={i === selectedOptionIndex}>
