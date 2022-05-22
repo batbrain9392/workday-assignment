@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.scss';
 import { getManagerData } from './services';
 import { ManagerDisplayData } from './types';
-// import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce';
 
 const RESET_SELECTED_OPTION_INDEX = -1;
-// const DEBOUNCE_TIME = 300;
+const DEBOUNCE_TIME = 300;
 
 const App = () => {
   const [managers, setManagers] = useState<ManagerDisplayData[]>([]);
@@ -24,31 +24,29 @@ const App = () => {
     })();
   }, []);
 
-  const filterResults = useCallback(
-    (value: string) => {
-      const valueWithNoSpaces = value.replace(/\s/g, '');
-      if (!valueWithNoSpaces) setFilteredManagers(managers);
-      else {
+  const filterResults = useMemo(
+    () =>
+      debounce((value: string) => {
+        const valueWithNoSpaces = value.replace(/\s/g, '');
+        if (!valueWithNoSpaces) {
+          setFilteredManagers(managers);
+          return;
+        }
         const searchRegex = new RegExp(valueWithNoSpaces, `i`);
         const data = managers.filter(({ searchTerm }) => searchTerm.match(searchRegex));
         setFilteredManagers(data);
-      }
-    },
+      }, DEBOUNCE_TIME),
     [managers]
   );
 
-  const textboxInputHandler = useCallback(
-    (target: EventTarget) => {
-      if (!(target instanceof HTMLInputElement)) return;
-      setSearchTerm(target.value);
-      const { value } = target;
-      filterResults(value);
-      setShowList(true);
-    },
-    [filterResults]
-  );
+  useEffect(() => filterResults(searchTerm), [filterResults, searchTerm]);
 
-  // const debouncedInputChangeHandler = useMemo(() => debounce(inputChangeHandler, DEBOUNCE_TIME), [inputChangeHandler]);
+  const textboxInputHandler = useCallback((target: EventTarget) => {
+    if (!(target instanceof HTMLInputElement)) return;
+    const { value } = target;
+    setSearchTerm(value);
+    setShowList(true);
+  }, []);
 
   useEffect(
     () => setSelectedOptionIndex(showList && filteredManagers.length ? 0 : RESET_SELECTED_OPTION_INDEX),
@@ -88,18 +86,18 @@ const App = () => {
           return;
         case 'Enter':
           e.preventDefault();
+          setShowList(false);
           if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
             const result = filteredManagers[selectedOptionIndex].name;
             setSearchTerm(result);
-            filterResults(result);
+            setShowList(false);
           }
-          setShowList(false);
           return;
         default:
           return;
       }
     },
-    [showList, selectedOptionIndex, filteredManagers, filterResults]
+    [showList, selectedOptionIndex, filteredManagers]
   );
 
   return (
