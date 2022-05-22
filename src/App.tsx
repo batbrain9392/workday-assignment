@@ -24,22 +24,28 @@ const App = () => {
     })();
   }, []);
 
-  const inputChangeHandler = useCallback(
-    (target: EventTarget) => {
-      if (target instanceof HTMLInputElement) {
-        setSearchTerm(target.value);
-        const { value } = target;
-        const valueWithNoSpaces = value.replace(/\s/g, '');
-        if (!valueWithNoSpaces) setFilteredManagers(managers);
-        else {
-          const searchRegex = new RegExp(valueWithNoSpaces, `i`);
-          const data = managers.filter(({ searchTerm }) => searchTerm.match(searchRegex));
-          setFilteredManagers(data);
-        }
-        setShowList(true);
+  const filterResults = useCallback(
+    (value: string) => {
+      const valueWithNoSpaces = value.replace(/\s/g, '');
+      if (!valueWithNoSpaces) setFilteredManagers(managers);
+      else {
+        const searchRegex = new RegExp(valueWithNoSpaces, `i`);
+        const data = managers.filter(({ searchTerm }) => searchTerm.match(searchRegex));
+        setFilteredManagers(data);
       }
     },
     [managers]
+  );
+
+  const textboxInputHandler = useCallback(
+    (target: EventTarget) => {
+      if (!(target instanceof HTMLInputElement)) return;
+      setSearchTerm(target.value);
+      const { value } = target;
+      filterResults(value);
+      setShowList(true);
+    },
+    [filterResults]
   );
 
   // const debouncedInputChangeHandler = useMemo(() => debounce(inputChangeHandler, DEBOUNCE_TIME), [inputChangeHandler]);
@@ -59,38 +65,41 @@ const App = () => {
       const { offsetTop, offsetHeight } = selectedOptionEl;
       const offsetBottom = offsetTop + offsetHeight;
       const scrollBottom = scrollTop + clientHeight;
-      if (offsetTop < scrollTop) {
-        current.scrollTop = offsetTop;
-      } else if (offsetBottom > scrollBottom) {
-        current.scrollTop = offsetBottom - clientHeight;
-      }
+      if (offsetTop < scrollTop) current.scrollTop = offsetTop;
+      else if (offsetBottom > scrollBottom) current.scrollTop = offsetBottom - clientHeight;
     }
   }, [selectedOptionIndex]);
 
-  const inputKeyDownHandler = useCallback(
+  const textboxKeyDownHandler = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!showList || selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
+      if (!showList) return;
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
+          if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
           const nextIndex = (selectedOptionIndex + 1) % filteredManagers.length;
           setSelectedOptionIndex(nextIndex);
           return;
         case 'ArrowUp':
           e.preventDefault();
+          if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
           const previousIndex = (selectedOptionIndex || filteredManagers.length) - 1;
           setSelectedOptionIndex(previousIndex);
           return;
         case 'Enter':
           e.preventDefault();
-          setSearchTerm(filteredManagers[selectedOptionIndex].name);
+          if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
+            const result = filteredManagers[selectedOptionIndex].name;
+            setSearchTerm(result);
+            filterResults(result);
+          }
           setShowList(false);
           return;
         default:
           return;
       }
     },
-    [showList, selectedOptionIndex, filteredManagers]
+    [showList, selectedOptionIndex, filteredManagers, filterResults]
   );
 
   return (
@@ -105,10 +114,10 @@ const App = () => {
         aria-autocomplete="list"
         ref={inputEl}
         value={searchTerm}
-        onInput={(e) => inputChangeHandler(e.target)}
+        onInput={(e) => textboxInputHandler(e.target)}
         onFocus={() => setShowList(true)}
         onBlur={() => setShowList(false)}
-        onKeyDown={(e) => inputKeyDownHandler(e)}
+        onKeyDown={(e) => textboxKeyDownHandler(e)}
       />
       <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
       <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }} ref={listEl}>
