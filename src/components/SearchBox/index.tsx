@@ -6,6 +6,8 @@ import './index.scss';
 
 const RESET_SELECTED_OPTION_INDEX = -1;
 const DEBOUNCE_TIME = 300;
+const NO_MATCHING_ITEMS = `No matching items`;
+const LIST_IS_EMPTY = `List is empty`;
 
 export const SearchBox = ({ managers, loading }: { managers: ManagerDisplayData[]; loading: boolean }) => {
   const [filteredManagers, setFilteredManagers] = useState<typeof managers>([]);
@@ -159,10 +161,10 @@ export const SearchBox = ({ managers, loading }: { managers: ManagerDisplayData[
               <Option key={manager.id} manager={manager} selected={i === selectedOptionIndex} />
             ))
           ) : (
-            <Option>No matching items</Option>
+            <Option>{NO_MATCHING_ITEMS}</Option>
           )
         ) : (
-          <Option>List is empty</Option>
+          <Option>{LIST_IS_EMPTY}</Option>
         )}
       </ul>
     </div>
