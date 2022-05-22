@@ -1,0 +1,42 @@
+:root {
+  --input-height: 3.5rem;
+  --input-pad: 1rem;
+  --icon-size: 2rem;
+  --border-width: 0.1rem;
+  --border: var(--border-width) solid darkgray;
+  --list-item-height: calc(var(--input-height) + 2rem);
+}
+
+.container {
+  position: relative;
+  width: 25rem;
+}
+
+input,
+ul {
+  width: inherit;
+  border: var(--border);
+  border-radius: 0.3rem;
+}
+
+input {
+  height: var(--input-height);
+  padding: 0 calc(var(--input-pad) + var(--icon-size)) 0 var(--input-pad);
+  text-overflow: ellipsis;
+}
+
+.icon {
+  position: absolute;
+  font-size: var(--icon-size);
+  top: calc(var(--input-height) / 2 - var(--icon-size) / 2);
+  right: calc(var(--input-pad) - 0.2rem);
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: calc(var(--input-height) + 0.1rem);
+  height: calc(var(--list-item-height) * 2 + var(--border-width) * 3);
+  overflow-y: auto;
+}

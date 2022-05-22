@@ -10,16 +10,18 @@ export async function getManagerData(): Promise<ManagerDisplayData[]> {
 
 function convertToManagerDisplayData({ data, included }: APIResponse): ManagerDisplayData[] {
   const accounts = included.filter(isAccount);
-  return data.map(({ id, attributes: { firstName, lastName, name }, relationships }) => {
-    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    const searchTerm = `${firstName}${lastName}`.toLowerCase();
-    const email = accounts.find(({ id }) => id === relationships.account.data.id)?.attributes.email ?? ``;
-    return {
-      id,
-      initials,
-      name: name,
-      email,
-      searchTerm,
-    };
-  });
+  return data
+    .map(({ id, attributes: { firstName, lastName, name }, relationships }) => {
+      const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+      const searchTerm = `${firstName}${lastName}`.toLowerCase();
+      const email = accounts.find(({ id }) => id === relationships.account.data.id)?.attributes.email ?? ``;
+      return {
+        id,
+        initials,
+        name: name,
+        email,
+        searchTerm,
+      };
+    })
+    .sort((a, b) => a.searchTerm.localeCompare(b.searchTerm));
 }

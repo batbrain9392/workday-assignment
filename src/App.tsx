@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import './App.css';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import './App.scss';
 import { Option } from './components';
 import { getManagerData } from './services';
 import { ManagerDisplayData } from './types';
@@ -9,6 +9,8 @@ const App = () => {
   const [managers, setManagers] = useState<ManagerDisplayData[]>([]);
   const [filteredManagers, setFilteredManagers] = useState<typeof managers>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showList, setShowList] = useState(false);
+  const inputEl = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     (async () => setManagers(await getManagerData()))();
@@ -32,14 +34,28 @@ const App = () => {
   useEffect(() => debouncedInputChangeHandler(searchTerm), [searchTerm, debouncedInputChangeHandler]);
 
   return (
-    <>
-      <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-      <ul>
-        {(filteredManagers.length ? filteredManagers : managers).map((manager) => (
-          <Option key={manager.id} data={manager}></Option>
+    <div className="container" aria-owns="managerList">
+      <input
+        type="text"
+        placeholder="Choose Manager"
+        autoComplete="off"
+        role="combobox"
+        aria-controls="managerList"
+        aria-expanded={showList}
+        aria-autocomplete="list"
+        ref={inputEl}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        onFocus={() => setShowList(true)}
+        onBlur={() => setShowList(false)}
+      />
+      <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
+      <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }}>
+        {(filteredManagers.length ? filteredManagers : managers).map((manager, i) => (
+          <Option key={manager.id} data={manager} selected={i === 0}></Option>
         ))}
       </ul>
-    </>
+    </div>
   );
 };
 

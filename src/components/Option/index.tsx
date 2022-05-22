@@ -1,10 +1,10 @@
 import React from 'react';
 import { ManagerDisplayData } from '../../types';
-import './index.css';
+import './index.scss';
 
-export const Option = ({ data }: { data: ManagerDisplayData }) => {
+export const Option = ({ data, selected }: { data: ManagerDisplayData; selected: boolean }) => {
   return (
-    <li>
+    <li role="option" aria-selected={selected}>
       <div className="initials">{data.initials}</div>
       <div>
         <div className="name">{data.name}</div>
