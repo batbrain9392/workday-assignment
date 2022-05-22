@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
-import { ManagerDisplayData } from '../../types';
+import { DisplayData } from '../../types';
 import { Option } from './Option';
 import './index.scss';
 
@@ -9,8 +9,18 @@ const DEBOUNCE_TIME = 300;
 const NO_MATCHING_ITEMS = `No matching items`;
 const LIST_IS_EMPTY = `List is empty`;
 
-export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
-  const [filteredManagers, setFilteredManagers] = useState<typeof managers>([]);
+export const SearchBox = <
+  T extends {
+    list: DisplayData[];
+    placeholder: string;
+    listAriaLabel: string;
+  }
+>({
+  list,
+  placeholder,
+  listAriaLabel,
+}: T) => {
+  const [filteredList, setFilteredList] = useState<typeof list>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showList, setShowList] = useState(false);
   const inputEl = useRef<HTMLInputElement | null>(null);
@@ -21,8 +31,8 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
    * Set the displayed (filtered) item list with the full data on mount.
    */
   useEffect(() => {
-    setFilteredManagers(managers);
-  }, [managers]);
+    setFilteredList(list);
+  }, [list]);
 
   /**
    * Filter the main list and set the displayed list.
@@ -33,14 +43,16 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
       debounce((value: string) => {
         const valueWithNoSpaces = value.replace(/\s/g, '');
         if (!valueWithNoSpaces) {
-          setFilteredManagers(managers);
+          setFilteredList(list);
           return;
         }
         const searchRegex = new RegExp(valueWithNoSpaces, `i`);
-        const data = managers.filter(({ searchTerm }) => searchTerm.match(searchRegex));
-        setFilteredManagers(data);
+        const data = list.filter(({ firstName, lastName }) =>
+          `${firstName}${lastName}`.toLowerCase().match(searchRegex)
+        );
+        setFilteredList(data);
       }, DEBOUNCE_TIME),
-    [managers]
+    [list]
   );
 
   /**
@@ -65,8 +77,8 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
    * Resets the selected option index when the list closes or if the list is empty.
    */
   useEffect(() => {
-    setSelectedOptionIndex(showList && filteredManagers.length ? 0 : RESET_SELECTED_OPTION_INDEX);
-  }, [showList, filteredManagers]);
+    setSelectedOptionIndex(showList && filteredList.length ? 0 : RESET_SELECTED_OPTION_INDEX);
+  }, [showList, filteredList]);
 
   /**
    * Scrolls the selected option into view.
@@ -99,20 +111,20 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
         case 'ArrowDown':
           e.preventDefault();
           if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
-          const nextIndex = (selectedOptionIndex + 1) % filteredManagers.length;
+          const nextIndex = (selectedOptionIndex + 1) % filteredList.length;
           setSelectedOptionIndex(nextIndex);
           return;
         case 'ArrowUp':
           e.preventDefault();
           if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
-          const previousIndex = (selectedOptionIndex || filteredManagers.length) - 1;
+          const previousIndex = (selectedOptionIndex || filteredList.length) - 1;
           setSelectedOptionIndex(previousIndex);
           return;
         case 'Enter':
           e.preventDefault();
           setShowList(false);
           if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
-            const result = filteredManagers[selectedOptionIndex].name;
+            const result = filteredList[selectedOptionIndex].name;
             setSearchTerm(result);
             setShowList(false);
           }
@@ -121,19 +133,19 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
           return;
       }
     },
-    [showList, selectedOptionIndex, filteredManagers]
+    [showList, selectedOptionIndex, filteredList]
   );
 
   return (
     // container
-    <div className="container" aria-owns="managerList">
+    <div className="container" aria-owns="itemList">
       <input
         type="text"
-        placeholder="Choose Manager"
+        placeholder={placeholder}
         autoComplete="off"
         role="combobox"
-        aria-label="Choose Manager"
-        aria-controls="managerList"
+        aria-label={placeholder}
+        aria-controls="itemList"
         aria-expanded={showList}
         aria-autocomplete="list"
         ref={inputEl}
@@ -147,18 +159,16 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
       <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
       {/* list container */}
       <ul
-        id="managerList"
-        aria-label="Manager List"
+        id="itemList"
+        aria-label={listAriaLabel}
         role="listbox"
         style={{ display: showList ? 'block' : 'none' }}
         ref={listEl}
       >
-        {managers.length ? (
-          filteredManagers.length ? (
+        {list.length ? (
+          filteredList.length ? (
             // valid list items
-            filteredManagers.map((manager, i) => (
-              <Option key={manager.id} manager={manager} selected={i === selectedOptionIndex} />
-            ))
+            filteredList.map((item, i) => <Option key={item.id} data={item} selected={i === selectedOptionIndex} />)
           ) : (
             <Option>{NO_MATCHING_ITEMS}</Option>
           )

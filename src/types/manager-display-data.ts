@@ -1,7 +1,5 @@
-export interface ManagerDisplayData {
-  id: string;
-  initials: string;
-  name: string;
-  email: string;
-  searchTerm: string;
-}
+import { AccountAttributes, Employee, EmployeeAttributes } from './api-response';
+
+export type DisplayData = Pick<Employee, 'id'> &
+  Pick<EmployeeAttributes, 'name' | 'firstName' | 'lastName'> &
+  Pick<AccountAttributes, 'email'>;

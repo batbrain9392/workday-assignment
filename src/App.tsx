@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './App.scss';
 import { fetchManagerDataController } from './services';
-import { ManagerDisplayData } from './types';
+import { DisplayData } from './types';
 import { SearchBox } from './components';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
-  const [managers, setManagers] = useState<ManagerDisplayData[]>([]);
+  const [managers, setManagers] = useState<DisplayData[]>([]);
   const [error, setError] = useState('');
 
   /**
@@ -32,7 +32,7 @@ const App = () => {
     <div>Loading...</div>
   ) : (
     <main>
-      <SearchBox {...{ managers }}></SearchBox>
+      <SearchBox list={managers} placeholder="Choose Manager" listAriaLabel="Manager List"></SearchBox>
       {error && <div className="error">{error}</div>}
     </main>
   );
