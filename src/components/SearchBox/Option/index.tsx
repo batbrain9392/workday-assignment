@@ -26,4 +26,5 @@ const Option_PureFunction = ({
   );
 };
 
+// Memoizing this to save on `initials` calculation and general rendering
 export const Option = React.memo(Option_PureFunction);
