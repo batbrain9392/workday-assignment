@@ -114,7 +114,13 @@ export const SearchBox = ({ managers }: { managers: ManagerDisplayData[] }) => {
         onKeyDown={(e) => textboxKeyDownHandler(e)}
       />
       <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
-      <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }} ref={listEl}>
+      <ul
+        id="managerList"
+        aria-label="Manager List"
+        role="listbox"
+        style={{ display: showList ? 'block' : 'none' }}
+        ref={listEl}
+      >
         {filteredManagers.length ? (
           filteredManagers.map((manager, i) => (
             <Option key={manager.id} manager={manager} selected={i === selectedOptionIndex} />
