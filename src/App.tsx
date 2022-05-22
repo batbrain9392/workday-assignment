@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.scss';
-import { Option } from './components';
 import { getManagerData } from './services';
 import { ManagerDisplayData } from './types';
 import debounce from 'lodash.debounce';
@@ -13,13 +12,17 @@ const App = () => {
   const inputEl = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    (async () => setManagers(await getManagerData()))();
+    (async () => {
+      const data = await getManagerData();
+      setManagers(data);
+      setFilteredManagers(data);
+    })();
   }, []);
 
   const inputChangeHandler = useCallback(
     (value: string) => {
       const valueWithNoSpaces = value.replace(/\s/g, '');
-      if (!valueWithNoSpaces) setFilteredManagers([]);
+      if (!valueWithNoSpaces) setFilteredManagers(managers);
       else {
         const searchRegex = new RegExp(valueWithNoSpaces, `i`);
         const data = managers.filter(({ searchTerm }) => searchTerm.match(searchRegex));
@@ -51,9 +54,19 @@ const App = () => {
       />
       <span className="icon material-symbols-outlined">expand_{showList ? 'less' : 'more'}</span>
       <ul id="managerList" role="listbox" style={{ display: showList ? 'block' : 'none' }}>
-        {(filteredManagers.length ? filteredManagers : managers).map((manager, i) => (
-          <Option key={manager.id} data={manager} selected={i === 0}></Option>
-        ))}
+        {filteredManagers.length ? (
+          filteredManagers.map((manager, i) => (
+            <li role="option" aria-selected={i === 0}>
+              <div className="initials">{manager.initials}</div>
+              <div>
+                <div className="name">{manager.name}</div>
+                <div className="email color-muted">{manager.email}</div>
+              </div>
+            </li>
+          ))
+        ) : (
+          <li className="color-muted">No matching items</li>
+        )}
       </ul>
     </div>
   );
