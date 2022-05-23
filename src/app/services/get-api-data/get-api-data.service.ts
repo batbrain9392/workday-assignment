@@ -14,7 +14,7 @@ export class GetApiDataService {
   ): Observable<{ data: DisplayData[]; error: string }> {
     return this.http.get<APIResponse>(url).pipe(
       map((data) => ({
-        data: this.convertToManagerDisplayData(data),
+        data: this.convertToDisplayData(data),
         error: ``,
       })),
       catchError((error: Error) => {
@@ -29,10 +29,7 @@ export class GetApiDataService {
   /**
    * Sorts the data by name and maps their emails from the matching account.
    */
-  private convertToManagerDisplayData({
-    data,
-    included,
-  }: APIResponse): DisplayData[] {
+  private convertToDisplayData({ data, included }: APIResponse): DisplayData[] {
     const accounts = included.filter(isAccount);
     return data
       .sort((a, b) => a.attributes.name.localeCompare(b.attributes.name))

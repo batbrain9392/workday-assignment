@@ -5,18 +5,18 @@ export interface APIResponse {
   links: APIResponseLinks;
 }
 
-export enum Type {
+export enum EntityType {
   Accounts = 'accounts',
   Companies = 'companies',
   Employees = 'employees',
 }
 
 export function isAccount(item: APIResponse['included'][0]): item is Account {
-  return item.type === Type.Accounts;
+  return item.type === EntityType.Accounts;
 }
 
 export interface Employee {
-  type: Type.Employees;
+  type: EntityType.Employees;
   id: string;
   links: Pick<APIResponseLinks, 'self'>;
   attributes: EmployeeAttributes;
@@ -47,14 +47,14 @@ export interface EmployeeAttributes {
 }
 
 export interface Relationships {
-  company: { data: { type: Type.Companies; id: string } };
-  account: { data: { type: Type.Accounts; id: string } };
+  company: { data: { type: EntityType.Companies; id: string } };
+  account: { data: { type: EntityType.Accounts; id: string } };
   phones: { data: unknown[] };
-  Manager?: { data: { type: Type.Employees; id: string } };
+  Manager?: { data: { type: EntityType.Employees; id: string } };
 }
 
 export interface Account {
-  type: Type.Accounts;
+  type: EntityType.Accounts;
   id: string;
   links: Pick<APIResponseLinks, 'self'>;
   attributes: AccountAttributes;
