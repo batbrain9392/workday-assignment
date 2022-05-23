@@ -14,7 +14,7 @@ describe('AppComponent', () => {
   });
 
   describe(`INIT`, () => {
-    it('should be created', () => {
+    it(`should be created`, () => {
       expect(itemUnderTest).toBeTruthy();
     });
   });

@@ -65,12 +65,12 @@ describe('GetApiDataService', () => {
   });
 
   describe(`INIT`, () => {
-    it('should be created', () => {
+    it(`should be created`, () => {
       expect(itemUnderTest).toBeTruthy();
     });
   });
 
-  describe(`fetchManagerData`, () => {
+  describe(`METHOD: fetchManagerData`, () => {
     const url = `fake url`;
     it(`should return an the ready for display data for a successful fetch`, () => {
       http.get.mustBeCalledWith(url).nextOneTimeWith(validAPIResponse);
