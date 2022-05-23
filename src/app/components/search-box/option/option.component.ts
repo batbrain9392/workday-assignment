@@ -25,9 +25,10 @@ export class OptionComponent<T extends DisplayData> implements OnChanges {
   initials = ``;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (`data` in changes && this.data) {
-      const firstNameInitial = this.data.firstName.charAt(0);
-      const lastNameInitial = this.data.lastName.charAt(0);
+    if (`data` in changes && changes['data'].currentValue) {
+      const { firstName, lastName }: T = changes['data'].currentValue;
+      const firstNameInitial = firstName.charAt(0);
+      const lastNameInitial = lastName.charAt(0);
       this.initials = `${firstNameInitial}${lastNameInitial}`.toUpperCase();
     }
   }
