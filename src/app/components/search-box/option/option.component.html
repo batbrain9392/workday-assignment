@@ -1,0 +1,12 @@
+<ng-container *ngIf="data; else emptyOption">
+  <div class="initials">{{ initials }}</div>
+  <div>
+    <div class="name">{{ data.name }}</div>
+    <div class="email color-muted">{{ data.email }}</div>
+  </div>
+</ng-container>
+<ng-template #emptyOption>
+  <span class="color-muted">
+    <ng-content></ng-content>
+  </span>
+</ng-template>
