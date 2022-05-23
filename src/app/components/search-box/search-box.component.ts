@@ -16,14 +16,15 @@ import {
   combineLatest,
   debounceTime,
   distinctUntilChanged,
+  filter,
   map,
   merge,
   Observable,
 } from 'rxjs';
 import { DisplayData } from 'src/app/types';
 
-const RESET_SELECTED_OPTION_INDEX = -1;
-const DEBOUNCE_TIME = 300;
+export const RESET_SELECTED_OPTION_INDEX = -1;
+export const DEBOUNCE_TIME = 300;
 const removeSpaces = (value: string) => value.replace(/\s/g, '');
 
 @UntilDestroy()
@@ -63,11 +64,9 @@ export class SearchBoxComponent<T extends DisplayData>
 
   readonly trackById = (_: number, { id }: T) => id;
 
-  constructor() {}
-
   ngOnChanges(changes: SimpleChanges): void {
     if (`list` in changes) {
-      this.filteredList.next(this.list);
+      this.filteredList.next(changes['list'].currentValue);
     }
   }
 
@@ -79,6 +78,47 @@ export class SearchBoxComponent<T extends DisplayData>
     )
       .pipe(untilDestroyed(this))
       .subscribe();
+  }
+
+  /**
+   * Sets the first option as selected when the list opens with valid list items.
+   * Resets the selected option index when the list closes or if the list is empty.
+   */
+  private setSelectedOptionIndexOnExpand(): Observable<void> {
+    return combineLatest([this.showList$, this.filteredList$]).pipe(
+      map(([showList, filteredList]) =>
+        this.selectedOptionIndex.next(
+          showList && filteredList.length ? 0 : RESET_SELECTED_OPTION_INDEX
+        )
+      )
+    );
+  }
+
+  /**
+   * Scrolls the selected option into view.
+   * Skips when the list is empty.
+   */
+  private scrollsSelectedOptionIntoView(): Observable<void> {
+    return this.selectedOptionIndex$.pipe(
+      filter(
+        (selectedOptionIndex) =>
+          selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX
+      ),
+      map((selectedOptionIndex) => {
+        const ul = this.listElRef?.nativeElement;
+        if (!ul) return;
+        const { scrollTop, clientHeight } = ul;
+        const selectedOptionEl = ul.children.item(selectedOptionIndex);
+        if (!selectedOptionEl || !(selectedOptionEl instanceof HTMLLIElement))
+          return;
+        const { offsetTop, offsetHeight } = selectedOptionEl;
+        const offsetBottom = offsetTop + offsetHeight;
+        const scrollBottom = scrollTop + clientHeight;
+        if (offsetTop < scrollTop) ul.scrollTop = offsetTop;
+        else if (offsetBottom > scrollBottom)
+          ul.scrollTop = offsetBottom - clientHeight;
+      })
+    );
   }
 
   /**
@@ -104,45 +144,6 @@ export class SearchBoxComponent<T extends DisplayData>
     );
   }
 
-  /**
-   * Sets the first option as selected when the list opens with valid list items.
-   * Resets the selected option index when the list closes or if the list is empty.
-   */
-  private setSelectedOptionIndexOnExpand(): Observable<void> {
-    return combineLatest([this.showList$, this.filteredList$]).pipe(
-      map(([showList, filteredList]) =>
-        this.selectedOptionIndex.next(
-          showList && filteredList.length ? 0 : RESET_SELECTED_OPTION_INDEX
-        )
-      )
-    );
-  }
-
-  /**
-   * Scrolls the selected option into view.
-   * Skips when the list is empty.
-   */
-  private scrollsSelectedOptionIntoView(): Observable<void> {
-    return this.selectedOptionIndex$.pipe(
-      map((selectedOptionIndex) => {
-        if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
-          const current = this.listElRef?.nativeElement;
-          if (!current) return;
-          const { scrollTop, clientHeight } = current;
-          const selectedOptionEl = current.children.item(selectedOptionIndex);
-          if (!selectedOptionEl || !(selectedOptionEl instanceof HTMLLIElement))
-            return;
-          const { offsetTop, offsetHeight } = selectedOptionEl;
-          const offsetBottom = offsetTop + offsetHeight;
-          const scrollBottom = scrollTop + clientHeight;
-          if (offsetTop < scrollTop) current.scrollTop = offsetTop;
-          else if (offsetBottom > scrollBottom)
-            current.scrollTop = offsetBottom - clientHeight;
-        }
-      })
-    );
-  }
-
   expandList() {
     this.showList.next(true);
   }
@@ -152,37 +153,36 @@ export class SearchBoxComponent<T extends DisplayData>
   }
 
   /**
-   * Sets the selected option index on arrow key navigation.
-   * Sets the selected name in the textbox and filters the list accordingly on enter key.
+   * Handles the keyboard events in the textbox.
    * Skips when the list is empty.
+   * From the template, it is bound to 3 specific keys:
+   * - `ArrowDown`: Highlight the next item in the list.
+   * - `ArrowUp`: Highlight the previous item in the list.
+   * - `Enter`: Set the selected option name in the textbox and close the list
    */
-  textboxKeyDownHandler(e: Event): void {
-    if (!this.showList.getValue() || !(e instanceof KeyboardEvent)) return;
+  textboxKeyDownHandler(event: Event): void {
+    if (!this.showList.getValue() || !(event instanceof KeyboardEvent)) return;
     const selectedOptionIndex = this.selectedOptionIndex.getValue();
     const filteredList = this.filteredList.getValue();
-    switch (e.key) {
+    switch (event.key) {
       case 'ArrowDown':
-        e.preventDefault();
+        event.preventDefault();
         if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
         const nextIndex = (selectedOptionIndex + 1) % filteredList.length;
         this.selectedOptionIndex.next(nextIndex);
         return;
       case 'ArrowUp':
-        e.preventDefault();
+        event.preventDefault();
         if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
         const previousIndex = (selectedOptionIndex || filteredList.length) - 1;
         this.selectedOptionIndex.next(previousIndex);
         return;
-      case 'Enter':
-        e.preventDefault();
-        this.showList.next(false);
-        if (selectedOptionIndex !== RESET_SELECTED_OPTION_INDEX) {
-          const result = filteredList[selectedOptionIndex].name;
-          this.searchTermControl.setValue(result);
-          this.showList.next(false);
-        }
-        return;
       default:
+        event.preventDefault();
+        this.showList.next(false);
+        if (selectedOptionIndex === RESET_SELECTED_OPTION_INDEX) return;
+        const result = filteredList[selectedOptionIndex].name;
+        this.searchTermControl.setValue(result);
         return;
     }
   }
