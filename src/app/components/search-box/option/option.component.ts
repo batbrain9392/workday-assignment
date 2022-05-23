@@ -4,7 +4,6 @@ import {
   Input,
   OnChanges,
   SimpleChanges,
-  HostBinding,
 } from '@angular/core';
 import { DisplayData } from 'src/app/types';
 
@@ -17,10 +16,6 @@ import { DisplayData } from 'src/app/types';
 export class OptionComponent<T extends DisplayData> implements OnChanges {
   @Input() data?: T;
   @Input() selected?: boolean;
-
-  @HostBinding('class.color-muted') get isEmptyOption(): boolean {
-    return !this.data;
-  }
 
   initials = ``;
 

@@ -19,17 +19,6 @@ describe('OptionComponent', () => {
     });
   });
 
-  describe(`PROPERTY: isEmptyOption`, () => {
-    it(`should return false if data has been provided`, () => {
-      itemUnderTest.data = { id: `fake id` } as DisplayData;
-      expect(itemUnderTest.isEmptyOption).toBe(false);
-    });
-    it(`should return true if data has not been provided`, () => {
-      itemUnderTest.data = undefined;
-      expect(itemUnderTest.isEmptyOption).toBe(true);
-    });
-  });
-
   describe(`LIFE-CYCLE: ngOnChanges`, () => {
     it(`should set the initials when data is received`, () => {
       const validData = {
